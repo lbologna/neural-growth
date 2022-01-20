@@ -1,0 +1,17 @@
+{
+    "compute_stats": {
+        "spxb": 5,
+        "isi": 0.08,
+        "min_fir_ch": 5,
+        "min_brs_ch": 5,
+        "min_mfr_ch": 0.2,
+        "min_mbr_ch": 0.5,
+        "data_file": "data.json",
+        "output_file": "stats.json"
+    },
+    "plot_stats": {
+        "stats_file": "stats.json",
+        "image_folder": "stats_plots",
+        "wait_time": 0
+    }
+}

@@ -1,14 +1,14 @@
+import sys
 import os
 import json
 import plotly.graph_objects as go
 import numpy as np
 import time
 
-stats_file = "stats.json"
-
 def plot_fig(mean, sem, divs, yaxis_title, b, e, stat_label, ch_num=[]):
     filename = b + "_exp_" + e + "_" + stat_label
-    title = b + " - exp: " + e + " - " + stat_label
+    title = b + " - exp: " + e + " - " + stat_label + "<br>"
+    title += "Number of bursting channels for each div: " 
     for s in ch_num:
         title += " " + str(s)
     fig = go.Figure()
@@ -31,21 +31,25 @@ def plot_fig(mean, sem, divs, yaxis_title, b, e, stat_label, ch_num=[]):
         xaxis=dict(range=[divs[0], divs[-1]],title="DIVs"), 
         yaxis=dict(title=yaxis_title))
 
-    image_folder = "imgs"
     if not os.path.exists(image_folder):
         os.makedirs(image_folder)
 
     fig.write_html(os.path.join(image_folder, filename + ".html"))
 
 
+with open(sys.argv[1]) as pf:
+    config = json.load(pf)
 
-wait_time = 0
-with open(stats_file, 'r') as fp:
+with open(config["plot_stats"]["stats_file"], 'r') as fp:
     res = json.load(fp)
 
+image_folder = config["plot_stats"]["image_folder"]
+wait_time = config["plot_stats"]["wait_time"]
 
-for b in res.keys():
-    for e in res[b].keys():
+
+
+for b in res["batches"].keys():
+    for e in res["batches"][b].keys():
         divs = []
         mfr_ch_num = []
         mfr = []
@@ -77,32 +81,37 @@ for b in res.keys():
         mnrs_upper = []
         mnrs_lower = []
 
-        for d in res[b][e].keys():
+        for d in res["batches"][b][e].keys():
             div = int(d.lower().replace("div",""))
             divs.append(div)
-            mfr.append(res[b][e][d]["mfr"]["mean"])
-            mfr_sem.append(res[b][e][d]["mfr"]["sem"])
-            mfr_ch_num.append(len(res[b][e][d]["mfr"]["chs"].keys()))
+            mfr.append(res["batches"][b][e][d]["mfr"]["mean"])
+            mfr_sem.append(res["batches"][b][e][d]["mfr"]["sem"])
+            mfr_ch_num.append(len(res["batches"][b][e][d]["mfr"]["chs"].keys()))
 
-            mbr.append(res[b][e][d]["mbr"]["mean"])
-            mbr_sem.append(res[b][e][d]["mbr"]["sem"])
-            mbr_ch_num.append(len(res[b][e][d]["mbr"]["chs"].keys()))
+            mbr.append(res["batches"][b][e][d]["mbr"]["mean"])
+            mbr_sem.append(res["batches"][b][e][d]["mbr"]["sem"])
+            mbr_ch_num.append(len(res["batches"][b][e][d]["mbr"]["chs"].keys()))
             
-            mfib.append(res[b][e][d]["mfib"]["mean"])
-            mfib_sem.append(res[b][e][d]["mfib"]["sem"])
-            mfib_ch_num.append(len(res[b][e][d]["mfib"]["chs"].keys()))
+            mfib.append(res["batches"][b][e][d]["mfib"]["mean"])
+            mfib_sem.append(res["batches"][b][e][d]["mfib"]["sem"])
+            mfib_ch_num.append(len(res["batches"][b][e][d]["mfib"]["chs"].keys()))
             
-            mburdur.append(res[b][e][d]["mburdur"]["mean"])
-            mburdur_sem.append(res[b][e][d]["mburdur"]["sem"])
-            mburdur_ch_num.append(len(res[b][e][d]["mburdur"]["chs"].keys()))
+            mburdur.append(res["batches"][b][e][d]["mburdur"]["mean"])
+            mburdur_sem.append(res["batches"][b][e][d]["mburdur"]["sem"])
+            mburdur_ch_num.append(len(res["batches"][b][e][d]["mburdur"]["chs"].keys()))
             
-            mnrs.append(res[b][e][d]["mnrs"]["mean"])
-            mnrs_sem.append(res[b][e][d]["mnrs"]["sem"])
-            mnrs_ch_num.append(len(res[b][e][d]["mnrs"]["chs"].keys()))
+            mnrs.append(res["batches"][b][e][d]["mnrs"]["mean"])
+            mnrs_sem.append(res["batches"][b][e][d]["mnrs"]["sem"])
+            mnrs_ch_num.append(len(res["batches"][b][e][d]["mnrs"]["chs"].keys()))
         #
         sort_index = np.argsort(np.array(divs))
         
         divs = [divs[i] for i in sort_index]
+        mfr_ch_num = [mfr_ch_num[i] for i in sort_index]
+        mbr_ch_num = [mbr_ch_num[i] for i in sort_index]
+        mfib_ch_num = [mfib_ch_num[i] for i in sort_index]
+        mburdur_ch_num = [mburdur_ch_num[i] for i in sort_index]
+        mnrs_ch_num = [mnrs_ch_num[i] for i in sort_index]
 
         #
         mfr = [mfr[i] for i in sort_index]
@@ -140,14 +149,18 @@ for b in res.keys():
         #
         plot_fig(mfr, y_mfr_sem, divs, "# spikes/s", b, e, "MFR", mfr_ch_num)
         time.sleep(wait_time)
+        #
         plot_fig(mbr, y_mbr_sem, divs, "# bursts/min", b, e, "MBR", mbr_ch_num)
         time.sleep(wait_time)
+        #
         plot_fig(mfib, y_mfib_sem, divs, "# spikes/burst", b, e, "MFIB",
                  mfib_ch_num)
         time.sleep(wait_time)
+        #
         plot_fig(mburdur, y_mburdur_sem, divs, "s", b, e, "MBURDUR", 
                  mburdur_ch_num)
         time.sleep(wait_time)
+        #
         plot_fig(mnrs, y_mnrs_sem, divs, "% randoms spikes", b, e, "MNRS", 
                  mnrs_ch_num)
         time.sleep(wait_time)
