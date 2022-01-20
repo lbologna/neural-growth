@@ -1,1 +1,1 @@
-# neural-growth-model
+# neural-growth
