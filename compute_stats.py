@@ -340,8 +340,6 @@ def main():
     configfile = args.configfile
     parsename = args.parsename
 
-
-
     # main
     with open(configfile, "r") as pf:
         config = json.load(pf)
