@@ -48,7 +48,7 @@ for root, d_names, f_names in os.walk(input_folder):
         
         if rec_type == "stim_stim" and "_stim1_" not in root_split[-1]:
             continue
-
+        print("Collecting data for : ", root)
         all_data = OrderedDict()
 
         # extract info
@@ -90,8 +90,9 @@ for root, d_names, f_names in os.walk(input_folder):
             all_data[batch][exp_name][div]["chs"] = OrderedDict()
 
         rec_len = -1
+        
         for f in f_names:
-            print("Collecting data for file: ", f)
+            
             timestamps = []
             try:
                 annots = loadmat(os.path.join(root, f))
